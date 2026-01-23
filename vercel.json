@@ -1,0 +1,18 @@
+{
+  "functions": {
+    "api/get-upload-url.js": {
+      "maxDuration": 10
+    }
+  },
+  "headers": [
+    {
+      "source": "/public/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
+}

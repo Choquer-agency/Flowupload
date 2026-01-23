@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Widget Test - Element Detection</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #1f2937;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 40px;
+    }
+    .test-section {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .test-section h2 {
+      color: #374151;
+      margin-top: 0;
+      margin-bottom: 5px;
+    }
+    .test-section p {
+      color: #6b7280;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    .test-section code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    form {
+      margin-top: 20px;
+    }
+    .form-actions {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .submit-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background: #059669;
+    }
+    .result-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      display: none;
+    }
+    .result-box.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload Widget Test</h1>
+  <p class="subtitle">Testing element detection for div and input elements</p>
+
+  <!-- Test 1: Div element with explicit flow-name -->
+  <div class="test-section">
+    <h2>Test 1: Div Element</h2>
+    <p>
+      Using <code>&lt;div flow-upload="widget" flow-name="attachments"&gt;</code><br>
+      Expected textarea name: <code>attachments</code>
+    </p>
+    <form id="form1" onsubmit="return showFormData(event, 'result1')">
+      <div flow-upload="widget" 
+           flow-name="attachments"
+           flow-button-color="#2563EB"
+           flow-text-color="#FFFFFF">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">Submit Form 1</button>
+      </div>
+    </form>
+    <div id="result1" class="result-box"></div>
+  </div>
+
+  <!-- Test 2: Input element (uses name attribute automatically) -->
+  <div class="test-section">
+    <h2>Test 2: Input Element (Auto Name)</h2>
+    <p>
+      Using <code>&lt;input type="file" name="documents" flow-upload="widget"&gt;</code><br>
+      Expected textarea name: <code>documents</code> (from input's name attribute)
+    </p>
+    <form id="form2" onsubmit="return showFormData(event, 'result2')">
+      <input type="file" 
+             name="documents" 
+             flow-upload="widget"
+             flow-button-color="#10B981"
+             flow-text-color="#FFFFFF">
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">Submit Form 2</button>
+      </div>
+    </form>
+    <div id="result2" class="result-box"></div>
+  </div>
+
+  <!-- Test 3: Input element with flow-name override -->
+  <div class="test-section">
+    <h2>Test 3: Input Element (Name Override)</h2>
+    <p>
+      Using <code>&lt;input name="old_name" flow-upload="widget" flow-name="new_name"&gt;</code><br>
+      Expected textarea name: <code>new_name</code> (flow-name overrides input name)
+    </p>
+    <form id="form3" onsubmit="return showFormData(event, 'result3')">
+      <input type="file" 
+             name="old_name" 
+             flow-upload="widget" 
+             flow-name="new_name"
+             flow-button-color="#8B5CF6"
+             flow-text-color="#FFFFFF">
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">Submit Form 3</button>
+      </div>
+    </form>
+    <div id="result3" class="result-box"></div>
+  </div>
+
+  <!-- Test 4: Input element with no name (uses default) -->
+  <div class="test-section">
+    <h2>Test 4: Input Element (Default Name)</h2>
+    <p>
+      Using <code>&lt;input type="file" flow-upload="widget"&gt;</code> (no name attribute)<br>
+      Expected textarea name: <code>uploaded_files</code> (default)
+    </p>
+    <form id="form4" onsubmit="return showFormData(event, 'result4')">
+      <input type="file" 
+             flow-upload="widget"
+             flow-button-color="#F59E0B"
+             flow-text-color="#000000">
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">Submit Form 4</button>
+      </div>
+    </form>
+    <div id="result4" class="result-box"></div>
+  </div>
+
+  <!-- Load the widget -->
+  <script src="upload-widget.js"></script>
+  
+  <script>
+    function showFormData(event, resultId) {
+      event.preventDefault();
+      var form = event.target;
+      var formData = new FormData(form);
+      var result = document.getElementById(resultId);
+      
+      var output = 'Form Data:\n';
+      output += '─'.repeat(40) + '\n';
+      
+      var hasData = false;
+      for (var pair of formData.entries()) {
+        hasData = true;
+        output += 'Field: "' + pair[0] + '"\n';
+        output += 'Value: ' + (pair[1] || '(empty)') + '\n';
+        output += '─'.repeat(40) + '\n';
+      }
+      
+      if (!hasData) {
+        output += '(No form data - upload a file first)\n';
+      }
+      
+      result.textContent = output;
+      result.classList.add('show');
+      
+      return false;
+    }
+  </script>
+</body>
+</html>
