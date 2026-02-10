@@ -99,6 +99,10 @@ var textColor = container.getAttribute('flow-text-color') || '#FFFFFF';
         css += '.drop-zone-text { margin-top: 12px; color: #6b7280; font-size: 14px; } ';
         css += '.upload-drop-zone.drag-over .drop-zone-text { color: #2563EB; font-weight: 500; } ';
         css += '@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } } ';
+        // Validation error styles
+        css += '.upload-drop-zone.validation-error { border-color: #ef4444; background: #fef2f2; } ';
+        css += '.upload-validation-message { color: #dc2626; font-size: 13px; margin-top: 8px; display: none; } ';
+        css += '.upload-validation-message.show { display: block; } ';
 
 
         styles.textContent = css;
@@ -125,6 +129,7 @@ var textColor = container.getAttribute('flow-text-color') || '#FFFFFF';
         html += '</div>';
 
         html += '<div class="upload-info">Max 5MB per file</div>';
+        html += '<div class="upload-validation-message" id="validationMsg_' + instanceId + '">Please upload at least one file</div>';
         html += '<div class="upload-status" id="uploadStatus_' + instanceId + '"></div>';
         html += '<div class="upload-progress" id="uploadProgress_' + instanceId + '">';
         html += '<div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar_' + instanceId + '"></div></div>';
@@ -143,10 +148,11 @@ var textColor = container.getAttribute('flow-text-color') || '#FFFFFF';
         
         // Check if original element has required attribute
         var isRequired = container.hasAttribute('required');
-        var requiredAttr = isRequired ? ' required' : '';
         
         // Remove the instanceId from the name attribute, but keep it in the id for JavaScript to work
-        html += '<textarea name="' + uploadName + '" id="uploadedFilesData_' + instanceId + '"' + requiredAttr + ' style="position: absolute; left: -9999px; width: 1px; height: 1px;"></textarea>';
+        // Note: We don't use HTML5 required on hidden textarea (browsers can't validate off-screen elements)
+        // Instead, we use JavaScript validation below
+        html += '<textarea name="' + uploadName + '" id="uploadedFilesData_' + instanceId + '" data-required="' + isRequired + '" style="position: absolute; left: -9999px; width: 1px; height: 1px;"></textarea>';
         html += '</div>';
         
         // Handle widget injection based on element type
@@ -458,6 +464,58 @@ if (dropZone) {
       fileInput.click();
     }
   });
+}
+
+// Form validation for required uploads
+if (isRequired) {
+  var validationMsg = document.getElementById('validationMsg_' + instanceId);
+  
+  // Find parent form
+  var parentForm = widgetRoot.closest('form');
+  if (parentForm) {
+    parentForm.addEventListener('submit', function(e) {
+      // Check if files have been uploaded
+      if (!uploadedFilesData.value.trim()) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Show error state
+        if (dropZone) {
+          dropZone.classList.add('validation-error');
+        }
+        if (validationMsg) {
+          validationMsg.classList.add('show');
+        }
+        
+        // Scroll to the widget
+        widgetRoot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Shake animation
+        if (dropZone) {
+          dropZone.style.animation = 'shake 0.5s';
+          setTimeout(function() {
+            dropZone.style.animation = '';
+          }, 500);
+        }
+        
+        return false;
+      }
+    });
+  }
+  
+  // Clear error when files are uploaded
+  var originalUpdateHiddenField = updateHiddenField;
+  updateHiddenField = function() {
+    originalUpdateHiddenField();
+    if (uploadedFilesData.value.trim()) {
+      if (dropZone) {
+        dropZone.classList.remove('validation-error');
+      }
+      if (validationMsg) {
+        validationMsg.classList.remove('show');
+      }
+    }
+  };
 }
 
 });  // THIS CLOSES containers.forEach
