@@ -140,8 +140,13 @@ var textColor = container.getAttribute('flow-text-color') || '#FFFFFF';
         } else {
           uploadName = 'uploaded_files';
         }
+        
+        // Check if original element has required attribute
+        var isRequired = container.hasAttribute('required');
+        var requiredAttr = isRequired ? ' required' : '';
+        
         // Remove the instanceId from the name attribute, but keep it in the id for JavaScript to work
-        html += '<textarea name="' + uploadName + '" id="uploadedFilesData_' + instanceId + '" style="position: absolute; left: -9999px; width: 1px; height: 1px;"></textarea>';
+        html += '<textarea name="' + uploadName + '" id="uploadedFilesData_' + instanceId + '"' + requiredAttr + ' style="position: absolute; left: -9999px; width: 1px; height: 1px;"></textarea>';
         html += '</div>';
         
         // Handle widget injection based on element type
